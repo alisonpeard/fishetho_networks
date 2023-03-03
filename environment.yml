@@ -1,4 +1,4 @@
-name: fishethobase
+name: fishethobase_test
 # If issues with pyg use wheels installation described in pyg docs
 channels:
   - conda-forge
@@ -12,14 +12,18 @@ dependencies:
   - pyqt
   - tqdm                    # progress bars
   - pandas
+  - scikit-learn
+  - scipy
   # Plotting
   - matplotlib              # plotting
   # Networks
   - networkx
+  - graph-tool
   # Jupyter Environment
   - ipykernel               # attach environment to Jupyter notebook functionality
   - notebook                # Jupyter notebook
 
+# To add to Jupyter Notebook kernels
 # conda env create -f environment.yml --experimental-solver=libmamba python=3.9
 # conda activate fishethobase
 # python -m ipykernel install --user --n fishethobase

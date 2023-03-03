@@ -3,6 +3,16 @@ import pandas as pd
 from os.path import join
 import numpy as np
 
+criteria_dict = {17: 'Home range',
+                 18: 'Depth range',
+                 29: 'Migration',
+                 30: 'Reproduction',
+                 31: 'Aggregation',
+                 32: 'Aggression',
+                 33: 'Substrate',
+                 34: 'Stress',
+                 35: 'Malformation',
+                 36: 'Slaughter'}
 
 # assign all genera to taxonomic families
 families = {
@@ -78,45 +88,47 @@ classes = {
                      'Cambaridae', 'Palaemonidae'],
 }
 
-wd = join('..', '..', 'data')
-df = pd.read_csv(join(wd, 'feb_farm_data_s2.csv'))
 
-species = [*df['Name'].unique()]
-species.remove(np.nan)
-genera_repeated = [x.split(' ')[0] for x in species]
-genera = [*set(genera_repeated)]
+if __name__ == 'main':
+    wd = join('..', '..', 'data')
+    df = pd.read_csv(join(wd, 'feb_farm_data_s2.csv'))
 
-genus_counts = Counter(genera_repeated)
-print(genus_counts.most_common()[:3])  # show three most common genera
-genus_counts = dict(genus_counts)
+    species = [*df['Name'].unique()]
+    species.remove(np.nan)
+    genera_repeated = [x.split(' ')[0] for x in species]
+    genera = [*set(genera_repeated)]
 
-family_counts = {}
-for family_i, genera_i in families.items():
-        count = sum([genus_counts[genus] for genus in genera_i])
-        family_counts[family_i] = count
+    genus_counts = Counter(genera_repeated)
+    print(genus_counts.most_common()[:3])  # show three most common genera
+    genus_counts = dict(genus_counts)
 
-class_counts = {}
-for class_i, families_i in classes.items():
-        count = sum([family_counts[family] for family in families_i])
-        class_counts[class_i] = count
+    family_counts = {}
+    for family_i, genera_i in families.items():
+            count = sum([genus_counts[genus] for genus in genera_i])
+            family_counts[family_i] = count
+
+    class_counts = {}
+    for class_i, families_i in classes.items():
+            count = sum([family_counts[family] for family in families_i])
+            class_counts[class_i] = count
 
 
-# create dictionaries assigning genera, then species to classes
-classes_genera = {
-    'Cephalopoda': [],
-    'Actinopterygii': [],
-    'Malacostraca': []
-}
-classes_species = {}
-for class_i, families_i in classes.items():
-    for family in families_i:
-        classes_genera[class_i] += families[family]
+    # create dictionaries assigning genera, then species to classes
+    classes_genera = {
+        'Cephalopoda': [],
+        'Actinopterygii': [],
+        'Malacostraca': []
+    }
+    classes_species = {}
+    for class_i, families_i in classes.items():
+        for family in families_i:
+            classes_genera[class_i] += families[family]
 
-for class_i, genera_i in classes_genera.items():
-    classes_species[class_i] = []
+    for class_i, genera_i in classes_genera.items():
+        classes_species[class_i] = []
 
-    for genus in genera_i:
-        classes_species[class_i] += [*filter(lambda x: genus in x, species)]
+        for genus in genera_i:
+            classes_species[class_i] += [*filter(lambda x: genus in x, species)]
 
-for class_i, species_i in classes_species.items():
-    print(f"{class_i}:, {len(species_i)}")
+    for class_i, species_i in classes_species.items():
+        print(f"{class_i}:, {len(species_i)}")
