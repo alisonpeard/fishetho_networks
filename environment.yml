@@ -1,4 +1,4 @@
-name: fishethobase_test
+name: fishethobase
 # If issues with pyg use wheels installation described in pyg docs
 channels:
   - conda-forge
