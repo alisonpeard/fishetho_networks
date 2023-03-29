@@ -9,15 +9,22 @@ def sort_dict(dic):
     return {key: value for key, value in sorted(dic.items())}
 
 
-def sponge_partition(G, k=2):
+def sponge_partition(G, k=2, tau_plus=1, tau_minus=1):
     """
-    Cluster a signed network using SPONGE method. Isolated nodes are assigned there own clusters.
+    Cluster a signed network using SPONGE method. Isolated nodes are assigned
+    their own clusters.
     
     Parameters:
     ----------
     G : networkx.Graph
     k : int, default=2
         The number of clusters to search for.
+    tau_minus : float, default=1
+        Regularisation parameter: how much emphasis to give to minimising negative edges
+        within clusters. Must be greater than 1.
+    tau_plus : float, default=1
+        Regularisation parameter: how much emphasis to give to maximising positive
+        edges within clusters. Must be greater than 1.
 
     References:
     ----------
@@ -35,7 +42,7 @@ def sponge_partition(G, k=2):
     
     G.remove_nodes_from(isolated)
     
-    val, vect  = np.linalg.eigh(sponge(G))
+    val, vect  = np.linalg.eigh(sponge(G, tau_plus, tau_minus))
     positions = vect[:, 0: k - 1]
     partition = KMeans(n_clusters=k).fit(positions)
     partition_dict = {node: cluster for node, cluster in zip(nodes, partition.labels_)}
@@ -48,18 +55,24 @@ def sponge_partition(G, k=2):
     return partition_dict
 
     
-def sponge(G):
+def sponge(G, tau_plus=1, tau_minus=1):
     """
     Calculate the SPONGE matrix of an undirected, weighted, signed graph.
 
     The SPONGE matrix is a numpy matrix with elements representing the effective
-    conductance between pairs of nodes in the input graph. Original code from
+    conductance between pairs of nodes in the input graph. Original code from Shazia Babul
     shazia.babul@new.ox.ac.uk.
 
     Parameters
     ----------
     G : networkx.Graph
         An undirected, weighted, signed graph.
+    tau_minus : float, default=1
+        Regularisation parameter: how much emphasis to give to minimising negative edges
+        within clusters. Must be greater than 1.
+    tau_plus : float, default=1
+        Regularisation parameter: how much emphasis to give to maximising positive
+        edges within clusters. Must be greater than 1.
 
     Returns
     -------
@@ -88,11 +101,11 @@ def sponge(G):
     L_pos = D_pos - A_pos
     
     
-    N = L_neg + D_pos
+    N = L_neg + tau_plus * D_pos
     D, V = scipy.linalg.eigh(N)
     Bs = (V * np.sqrt(D)) @ V.T
     M1 = np.linalg.inv(Bs)
-    M2 = L_pos + D_neg
+    M2 = L_pos + tau_minus * D_neg
     
     sponge = np.matmul(M1, M2)
     sponge = np.matmul(sponge, M1)
